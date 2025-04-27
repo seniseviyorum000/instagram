@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zehragram</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #fafafa;
+      color: #262626;
+      font-size: 14px;
+      line-height: 18px;
+      padding-top: 60px;
+    }
+    .container {
+      max-width: 935px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .header {
+      height: 54px;
+      background-color: white;
+      border-bottom: 1px solid #dbdbdb;
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+    .header-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+    .logo {
+      font-family: 'Instagram Sans', cursive;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .profile {
+      display: flex;
+      padding: 30px 0;
+      border-bottom: 1px solid #dbdbdb;
+      margin-bottom: 20px;
+    }
+    .profile-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 100px;
+      flex-shrink: 0;
+    }
+    .profile-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .profile-stats {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .stat {
+      margin-right: 40px;
+      font-size: 16px;
+    }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-top: 20px;
+    }
+    .post {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .post img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .post:hover img {
+      transform: scale(1.02);
+    }
+    .username {
+      font-size: 28px;
+      font-weight: 300;
+      margin-right: 20px;
+    }
+    .edit-profile {
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+      padding: 5px 9px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal.show {
+      opacity: 1;
+    }
+    .modal-content {
+      width: 90%;
+      max-width: 935px;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      height: 80vh;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .modal.show .modal-content {
+      transform: scale(1);
+    }
+    .modal-img {
+      width: 65%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: black;
+    }
+    .modal-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .modal-sidebar {
+      width: 35%;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #efefef;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #efefef;
+    }
+    .modal-profile-pic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 14px;
+    }
+    .modal-profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .modal-username {
+      font-weight: 600;
+      color: #262626;
+    }
+    .modal-comments {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background-color: white;
+    }
+    .no-comments {
+      color: #8e8e8e;
+      text-align: center;
+      margin-top: 24px;
+    }
+    .modal-actions {
+      padding: 8px 16px;
+      border-top: 1px solid #efefef;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .action-left {
+      display: flex;
+    }
+    .action-icon {
+      margin-right: 16px;
+      cursor: pointer;
+    }
+    .action-icon svg {
+      fill: #262626;
+    }
+    .action-icon:hover svg {
+      fill: #8e8e8e;
+    }
+    .likes {
+      font-weight: 600;
+      margin: 8px 0;
+    }
+    .post-time {
+      color: #8e8e8e;
+      font-size: 10px;
+      text-transform: uppercase;
+      margin: 5px 0 16px;
+    }
+    .comment-box {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-top: 1px solid #efefef;
+    }
+    .comment-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 8px 0;
+      resize: none;
+      height: 36px;
+      max-height: 80px;
+    }
+    .post-button {
+      color: #0095f6;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0.3;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      z-index: 101;
+    }
+    .post-hover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 2;
+    }
+    .post:hover .post-hover {
+      opacity: 1;
+    }
+    .post-stats {
+      display: flex;
+      color: white;
+      font-weight: 600;
+    }
+    .post-stat {
+      display: flex;
+      align-items: center;
+      margin-right: 30px;
+    }
+    .post-stat svg {
+      margin-right: 6px;
+      fill: white;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      align-items: center;
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 18px;
+    }
+    @media (max-width: 768px) {
+      .modal-content {
+        flex-direction: column;
+        height: auto;
+        max-height: 90vh;
+      }
+      .modal-img, .modal-sidebar {
+        width: 100%;
+      }
+      .modal-img {
+        height: 50vh;
+      }
+    }
+    
+    /* Carousel için stil */
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      z-index: 3;
+    }
+    .carousel-prev {
+      left: 10px;
+    }
+    .carousel-next {
+      right: 10px;
+    }
+    
+    /* Like efekti */
+    .heart-animation {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+    }
+    .heart-animation svg {
+      width: 100%;
+      height: 100%;
+      fill: white;
+    }
+    .heart-animation.active {
+      animation: heart-burst 1s ease-out forwards;
+    }
+    @keyframes heart-burst {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      15% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+      }
+      30% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      45% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
+      60% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-content">
+      <div class="logo">Zehragram</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="profile">
+      <div class="profile-image">
+        <img src="a1.jpeg" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="profile-header">
+          <h2 class="username">ZehrayaKalbim</h2>
+          <button class="edit-profile" style="margin-left: 20px;">Edit Profile</button>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><strong>11</strong> posts</div>
+          <div class="stat"><strong>0</strong> followers</div>
+          <div class="stat"><strong>0</strong> following</div>
+        </div>
+        <div class="bio">
+          <span style="font-weight: 600;">Zehra</span>
+          <br>
+          <span>❤️</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="posts-grid">
+      <div class="post" onclick="openModal('1.jpeg', 1)">
+        <img src="1.jpeg" alt="Post 1">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('2.jpeg', 2)">
+        <img src="2.jpeg" alt="Post 2">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('3.jpeg', 3)">
+        <img src="3.jpeg" alt="Post 3">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('4.jpeg', 4)">
+        <img src="4.jpeg" alt="Post 4">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('5.jpeg', 5)">
+        <img src="5.jpeg" alt="Post 5">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('6.jpeg', 6)">
+        <img src="6.jpeg" alt="Post 6">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('7.jpeg', 7)">
+        <img src="7.jpeg" alt="Post 7">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('8.jpeg', 8)">
+        <img src="8.jpeg" alt="Post 8">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('9.jpeg', 9)">
+        <img src="9.jpeg" alt="Post 9">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('10.jpeg', 10)">
+        <img src="10.jpeg" alt="Post 10">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="post" onclick="openModal('11.jpeg', 11)">
+        <img src="11.jpeg" alt="Post 11">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0
+                border-bottom: 1px solid #dbdbdb;
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+    .header-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+    .logo {
+      font-family: 'Instagram Sans', cursive;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .profile {
+      display: flex;
+      padding: 30px 0;
+      border-bottom: 1px solid #dbdbdb;
+      margin-bottom: 20px;
+    }
+    .profile-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 100px;
+      flex-shrink: 0;
+    }
+    .profile-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .profile-stats {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .stat {
+      margin-right: 40px;
+      font-size: 16px;
+    }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-top: 20px;
+    }
+    .post {
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .post img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .post:hover img {
+      transform: scale(1.02);
+    }
+    .username {
+      font-size: 28px;
+      font-weight: 300;
+      margin-right: 20px;
+    }
+    .edit-profile {
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+      padding: 5px 9px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal.show {
+      opacity: 1;
+    }
+    .modal-content {
+      width: 90%;
+      max-width: 935px;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      height: 80vh;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+    .modal.show .modal-content {
+      transform: scale(1);
+    }
+    .modal-img {
+      width: 65%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: black;
+    }
+    .modal-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .modal-sidebar {
+      width: 35%;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #efefef;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #efefef;
+    }
+    .modal-profile-pic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 14px;
+    }
+    .modal-profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .modal-username {
+      font-weight: 600;
+      color: #262626;
+    }
+    .modal-comments {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background-color: white;
+    }
+    .no-comments {
+      color: #8e8e8e;
+      text-align: center;
+      margin-top: 24px;
+    }
+    .modal-actions {
+      padding: 8px 16px;
+      border-top: 1px solid #efefef;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .action-left {
+      display: flex;
+    }
+    .action-icon {
+      margin-right: 16px;
+      cursor: pointer;
+    }
+    .action-icon svg {
+      fill: #262626;
+    }
+    .action-icon:hover svg {
+      fill: #8e8e8e;
+    }
+    .likes {
+      font-weight: 600;
+      margin: 8px 0;
+    }
+    .post-time {
+      color: #8e8e8e;
+      font-size: 10px;
+      text-transform: uppercase;
+      margin: 5px 0 16px;
+    }
+    .comment-box {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-top: 1px solid #efefef;
+    }
+    .comment-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 8px 0;
+      resize: none;
+      height: 36px;
+      max-height: 80px;
+    }
+    .post-button {
+      color: #0095f6;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0.3;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      z-index: 101;
+    }
+    .post-hover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 2;
+    }
+    .post:hover .post-hover {
+      opacity: 1;
+    }
+    .post-stats {
+      display: flex;
+      color: white;
+      font-weight: 600;
+    }
+    .post-stat {
+      display: flex;
+      align-items: center;
+      margin-right: 30px;
+    }
+    .post-stat svg {
+      margin-right: 6px;
+      fill: white;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      align-items: center;
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 18px;
+    }
+    @media (max-width: 768px) {
+      .modal-content {
+        flex-direction: column;
+        height: auto;
+        max-height: 90vh;
+      }
+      .modal-img, .modal-sidebar {
+        width: 100%;
+      }
+      .modal-img {
+        height: 50vh;
+      }
+    }
+    
+    /* Carousel için stil */
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      z-index: 3;
+    }
+    .carousel-prev {
+      left: 10px;
+    }
+    .carousel-next {
+      right: 10px;
+    }
+    
+    /* Like efekti */
+    .heart-animation {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+    }
+    .heart-animation svg {
+      width: 100%;
+      height: 100%;
+      fill: white;
+    }
+    .heart-animation.active {
+      animation: heart-burst 1s ease-out forwards;
+    }
+    @keyframes heart-burst {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      15% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+      }
+      30% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      45% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
+      60% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-content">
+      <div class="logo">Zehragram</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="profile">
+      <div class="profile-image">
+        <img src="a1.jpeg" alt="Profile Picture">
+      </div>
+      <div class="profile-info">
+        <div class="profile-header">
+          <h2 class="username">ZehrayaKalbim</h2>
+          <button class="edit-profile" style="margin-left: 20px;">Edit Profile</button>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><strong>11</strong> posts</div>
+          <div class="stat"><strong>0</strong> followers</div>
+          <div class="stat"><strong>0</strong> following</div>
+        </div>
+        <div class="bio">
+          <span style="font-weight: 600;">Zehra</span>
+          <br>
+          <span>❤️</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="posts-grid">
+      <div class="post" onclick="openModal('1.jpeg', 1)">
+        <img src="1.jpeg" alt="Post 1">
+        <div class="post-hover">
+          <div class="post-stats">
+            <div class="post-stat">
+              <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+              </svg>
+              0
+            </div>
+            <div class="post-stat">
+              <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              0
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Other posts are duplicated in the same pattern -->
+      <!-- Post 2-11 are already in the code -->
+    </section>
+  </main>
+
+  <!-- Modal for displaying posts -->
+  <div class="modal" id="postModal">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <div class="modal-content">
+      <div class="modal-img">
+        <div class="carousel">
+          <img id="modalImg" src="" alt="Full size post">
+          <div class="heart-animation">
+            <svg aria-label="Like" height="24" role="img" viewBox="0 0 48 48" width="24">
+              <path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="modal-sidebar">
+        <div class="modal-header">
+          <div class="modal-profile-pic">
+            <img src="a1.jpeg" alt="Profile Picture">
+          </div>
+          <div class="modal-username">ZehrayaKalbim</div>
+        </div>
+        <div class="modal-comments">
+          <div class="no-comments">No comments yet.</div>
+        </div>
+        <div class="modal-actions">
+          <div class="action-buttons">
+            <div class="action-left">
+              <div class="action-icon like-btn" onclick="toggleLike(this)">
+                <svg aria-label="Like" height="24" role="img" viewBox="0 0 24 24" width="24">
+                  <path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>
+                </svg>
+              </div>
+              <div class="action-icon">
+                <svg aria-label="Comment" height="24" role="img" viewBox="0 0 24 24" width="24">
+                  <path d="M20.656 17.008a9.993 9.993 0 10-3.59 3.615L22 22z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+              </div>
+              <div class="action-icon">
+                <svg aria-label="Share Post" height="24" role="img" viewBox="0 0 24 24" width="24">
+                  <path d="M22 3L9.218 10.083" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+                  <path d="M11.698 20.334L22 3.001 2 3.001 9.218 10.084 11.698 20.334z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="action-icon">
+              <svg aria-label="Save" height="24" role="img" viewBox="0 0 24 24" width="24">
+                <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></polygon>
+              </svg>
+            </div>
+          </div>
+          <div class="likes">0 likes</div>
+          <div class="post-time">APRIL 27, 2025</div>
+        </div>
+        <div class="comment-box">
+          <textarea class="comment-input" placeholder="Add a comment..."></textarea>
+          <div class="post-button">Post</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentPostId = 0;
+    let likedPosts = {};
+    
+    function openModal(imgSrc, postId) {
+      currentPostId = postId;
+      document.getElementById('modalImg').src = imgSrc;
+      const modal = document.getElementById('postModal');
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+      
+      // Update like button state
+      const likeBtn = document.querySelector('.like-btn svg');
+      if (likedPosts[postId]) {
+        likeBtn.innerHTML = '<path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z"></path>';
+        likeBtn.style.fill = '#ed4956';
+      } else {
+        likeBtn.innerHTML = '<path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>';
+        likeBtn.style.fill = '';
+      }
+      
+      // Update likes text
+      document.querySelector('.likes').textContent = likedPosts[postId] ? '1 like' : '0 likes';
+    }
+    
+    function closeModal() {
+      const modal = document.getElementById('postModal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    }
+    
+    function toggleLike(el) {
+      const likeBtn = el.querySelector('svg');
+      const heartAnimation = document.querySelector('.heart-animation');
+      
+      if (likedPosts[currentPostId]) {
+        likedPosts[currentPostId] = false;
+        likeBtn.innerHTML = '<path d="M16.792 3.904A4.989 4.989 0 0121.5 8.5c0 3.321-2.679 6-6 6s-6-2.679-6-6 2.679-6 6-6c1.008 0 1.96.248 2.792.704l-2.5 2.5zM10.5 8.5c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4zm-9.985 8.124a1 1 0 011.372-.373l10 6a1 1 0 11-1.029 1.716l-10-6a1 1 0 01-.343-1.343z"></path>';
+        likeBtn.style.fill = '';
+        document.querySelector('.likes').textContent = '0 likes';
+      } else {
+        likedPosts[currentPostId] = true;
+        likeBtn.innerHTML = '<path d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z"></path>';
+        likeBtn.style.fill = '#ed4956';
+        document.querySelector('.likes').textContent = '1 like';
+        
+        // Heart animation
+        heartAnimation.classList.add('active');
+        setTimeout(() => {
+          heartAnimation.classList.remove('active');
+        }, 1000);
+      }
+      
+      // Update the post hover stats
+      const postHoverLikes = document.querySelectorAll('.post-hover .post-stat')[currentPostId - 1].querySelector(':last-child');
+      postHoverLikes.textContent = likedPosts[currentPostId] ? '1' : '0';
+    }
+    
+    // Double click to like
+    document.getElementById('modalImg').addEventListener('dblclick', function() {
+      if (!likedPosts[currentPostId]) {
+        const likeBtn = document.querySelector('.like-btn');
+        toggleLike(likeBtn);
+      }
+      
+      // Heart animation always shows on double click
+      const heartAnimation = document.querySelector('.heart-animation');
+      heartAnimation.classList.add('active');
+      setTimeout(() => {
+        heartAnimation.classList.remove('active');
+      }, 1000);
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('postModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+    
+    // ESC key to close modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('postModal').classList.contains('show')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
